@@ -1,0 +1,30 @@
+name: Compile iPad Receiver (unsigned)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: ios/PuenteReceiver
+        run: xcodegen generate
+      - name: Compile for physical iPad without signing credentials
+        working-directory: ios/PuenteReceiver
+        run: xcodebuild -project PuenteReceiver.xcodeproj -scheme PuenteReceiver -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Package unsigned app
+        working-directory: ios/PuenteReceiver
+        run: |
+          mkdir -p package/Payload
+          cp -R build/Build/Products/Release-iphoneos/PuenteReceiver.app package/Payload/
+          cd package
+          zip -r PuenteReceiver-UNSIGNED.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PuenteReceiver-UNSIGNED-needs-signing
+          path: ios/PuenteReceiver/package/PuenteReceiver-UNSIGNED.ipa

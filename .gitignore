@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/build/
+**/.DS_Store
+vendor/
+*.user
+*.p12
+*.mobileprovision
+*.ipa
